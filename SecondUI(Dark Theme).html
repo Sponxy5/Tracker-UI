@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project Tracker UI V.2</title>
+  <style>
+    body {
+      background-color: #1C1C1E;
+      color: #E5E5EA;
+      font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .graph-wrapper {
+      max-width: 95%;
+      margin: 20px auto;
+      border: 1px solid #2C2C2E;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 0;
+      table-layout: fixed;
+    }
+
+    colgroup col {
+      width: 12.5%;
+    }
+
+    th, td {
+      border: 1px solid #3A3A3C;
+      height: 50px;
+      text-align: center;
+      font-family: Helvetica, sans-serif;
+      padding: 0;
+    }
+
+    th {
+      background-color: #2C2C2E;
+      font-weight: bold;
+      color: #F2F2F7;
+    }
+
+    input, select {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent;
+      color: #E5E5EA;
+      text-align: center;
+      outline: none;
+      font-family: Helvetica, sans-serif;
+      box-sizing: border-box;
+    }
+
+    .status-green { background-color: #30D158 !important; color: #000; }
+    .status-yellow { background-color: #FFD60A !important; color: #000; }
+    .status-red { background-color: #FF453A !important; color: #000; }
+    .status-neutral { background-color: #48484A !important; }
+
+    .color-selector {
+      border: 1.5px solid #E5E5EA;
+      appearance: auto;
+      width: 20px;
+      height: 20px;
+      border-radius: 100%;
+      display: block;
+      margin: auto;
+      cursor: pointer;
+      background-color: transparent;
+    }
+
+    button {
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      background-color: #2C2C2E;
+      color: #F2F2F7;
+      border: 1px solid #3A3A3C;
+      border-radius: 6px;
+    }
+
+    .delete-btn {
+      background-color: #FF453A;
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px 12px;
+      border-radius: 6px;
+    }
+
+    .banner {
+      padding: 10px 20px;
+      font-weight: bold;
+      font-size: 18px;
+      margin: 0;
+      border-top: 1px solid #3A3A3C;
+      background-color: #2C2C2E;
+      color: #E5E5EA;
+    }
+
+    .banner.green { background-color: #1C3D2E; }
+    .banner.yellow { background-color: #665c1e; }
+    .banner.red { background-color: #5C1A1A; }
+    .banner.neutral { background-color: #3A3A3C; }
+
+    .control-bar {
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="control-bar">
+  <button onclick="addRow('neutral')">➕ Add Row</button>
+</div>
+
+<div class="graph-wrapper">
+  <!-- Neutral Section with Headers -->
+  <div class="banner neutral">Pending</div>
+  <table id="neutralTable">
+    <colgroup>
+      <col><col><col><col><col><col><col><col>
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Project & ID</th>
+        <th>Owner</th>
+        <th>Workflow</th>
+        <th>Release</th>
+        <th>WBS-Cap</th>
+        <th>WBS-O&M</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+  </table>
+
+  <!-- Green (no headers) -->
+  <div class="banner green">Completed / Ahead</div>
+  <table id="greenTable">
+    <colgroup>
+      <col><col><col><col><col><col><col><col>
+    </colgroup>
+  </table>
+
+  <!-- Yellow (no headers) -->
+  <div class="banner yellow">In Progress</div>
+  <table id="yellowTable">
+    <colgroup>
+      <col><col><col><col><col><col><col><col>
+    </colgroup>
+  </table>
+
+  <!-- Red (no headers) -->
+  <div class="banner red">Behind / Stalled</div>
+  <table id="redTable">
+    <colgroup>
+      <col><col><col><col><col><col><col><col>
+    </colgroup>
+  </table>
+</div>
+
+
+<script>
+function createRow(status = "neutral") {
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>
+      <select class="color-selector status-${status}" onchange="moveRow(this)">
+        <option value="neutral" ${status === "neutral" ? "selected" : ""}>⚪</option>
+        <option value="green" ${status === "green" ? "selected" : ""}>🟢</option>
+        <option value="yellow" ${status === "yellow" ? "selected" : ""}>🟡</option>
+        <option value="red" ${status === "red" ? "selected" : ""}>🔴</option>
+      </select>
+    </td>
+    <td><input></td>
+    <td><input></td>
+    <td><input></td>
+    <td><input></td>
+    <td><input></td>
+    <td><input></td>
+    <td><button class="delete-btn" onclick="deleteRow(this)">X</button></td>
+  `;
+  return row;
+}
+
+function addRow(status = "neutral") {
+  const table = document.getElementById(`${status}Table`);
+  table.appendChild(createRow(status));
+}
+
+function deleteRow(button) {
+  const row = button.closest("tr");
+  row.remove();
+}
+
+function moveRow(select) {
+  const row = select.closest("tr");
+  const newStatus = select.value;
+  const targetTable = document.getElementById(`${newStatus}Table`);
+  row.querySelectorAll('input').forEach(input => input.style.backgroundColor = "transparent");
+  row.querySelectorAll('select').forEach(sel => sel.className = `color-selector status-${newStatus}`);
+  targetTable.appendChild(row);
+}
+
+window.onload = function () {
+  ["neutral", "green", "yellow", "red"].forEach(status => addRow(status));
+};
+</script>
+
+</body>
+</html>
